@@ -1,11 +1,12 @@
-import express from "express";
-import {
+const express = require("express");
+const {
   // allDownload,
   downInstFB,
   // downTiktok
   // downYoutube,
-} from "../controller/MediaDownloader.js";
-import configDotenv from "dotenv";
+} = require("../controller/MediaDownloader.js");
+
+const configDotenv = require("dotenv");
 
 configDotenv.config();
 
@@ -16,4 +17,4 @@ router.post(`/${process.env.INSTAFB}`, downInstFB);
 // router.post(`/${process.env.TIKTOK}`, downTiktok);
 // router.post(`/${process.env.YOUTUBE}`, downYoutube);
 
-export default router;
+module.exports = router;

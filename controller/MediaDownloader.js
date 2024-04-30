@@ -1,6 +1,6 @@
-import FongsiDev_Scraper from "@fongsidev/scraper";
+const FongsiDev_Scraper = require("@fongsidev/scraper");
 
-export const downInstFB = async (req, res) => {
+const downInstFB = async (req, res) => {
   try {
     const { link } = req.body;
     const response = await FongsiDev_Scraper.Instagram(link);
@@ -8,6 +8,10 @@ export const downInstFB = async (req, res) => {
   } catch (error) {
     console.log(error.message);
   }
+};
+
+module.exports = {
+  downInstFB,
 };
 
 // export const downTiktok = async (req, res) => {
