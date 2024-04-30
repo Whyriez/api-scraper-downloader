@@ -1,6 +1,6 @@
-const express = require("express");
-const cors = require("cors");
-const MediaRoutes = require("./routes/MediaRoutes.js");
+import express from "express";
+import cors from "cors";
+import MediaRoutes from "./routes/MediaRoutes.js";
 
 const app = express();
 

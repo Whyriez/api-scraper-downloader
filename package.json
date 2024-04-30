@@ -1,6 +1,7 @@
 {
   "name": "scraper-downloader",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -10,10 +11,12 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@fongsidev/scraper": "^1.0.11",
+    "axios": "^1.6.8",
+    "cheerio": "^1.0.0-rc.12",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "file-type": "^19.0.0"
+    "file-type": "^19.0.0",
+    "qs": "^6.12.1"
   }
 }
