@@ -11,7 +11,7 @@ app.get("/", (req, res) => {
 app.use(
   cors({
     credentials: true,
-    origin: ["http://localhost:3000", "http://secret-chat.my.id"],
+    origin: ["http://secret-chat.my.id"],
   })
 );
 app.use(express.json());
