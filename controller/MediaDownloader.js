@@ -156,12 +156,12 @@ export const facebookdl = (Url) => {
           }),
           {
             headers: {
-              authority: process.env.authority,
+              authority: process.env.authorityFacebook,
               accept: "*/*",
               "accept-language": "ms-MY,ms;q=0.9,en-US;q=0.8,en;q=0.7,id;q=0.6",
               cookie: cookies.join("; "),
-              origin: process.env.origin,
-              referer: process.env.referer,
+              origin: process.env.originFacebook,
+              referer: process.env.refererFacebook,
               "sec-ch-ua": '"Not)A;Brand";v="24", "Chromium";v="116"',
               "sec-ch-ua-mobile": "?1",
               "sec-ch-ua-platform": '"Android"',
