@@ -1,13 +1,11 @@
 import express from "express";
 import {
-  // allDownload,
+  facebookdl,
   instagramDl,
-  // downTiktok
+  tikVideo,
+  youtubedl,
   // downYoutube,
 } from "../controller/MediaDownloader.js";
-import configDotenv from "dotenv";
-
-configDotenv.config();
 
 const router = express.Router();
 
@@ -22,9 +20,37 @@ router.post("/instagram", async (req, res) => {
   }
 });
 
-// router.post(`/${process.env.ALLDOWNLOAD}`, allDownload);
-// router.post(`/${process.env.INSTAFB}`, downInstFB);
-// router.post(`/${process.env.TIKTOK}`, downTiktok);
-// router.post(`/${process.env.YOUTUBE}`, downYoutube);
+router.post("/tiktok", async (req, res) => {
+  try {
+    const { link } = req.body;
+    const response = await tikVideo(link);
+    res.status(response.status).json(response);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/facebook", async (req, res) => {
+  try {
+    const { link } = req.body;
+    const response = await facebookdl(link);
+    res.status(response.status).json(response);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/youtube", async (req, res) => {
+  try {
+    const { link } = req.body;
+    const response = await youtubedl(link);
+    res.status(response.status).json(response);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 export default router;
