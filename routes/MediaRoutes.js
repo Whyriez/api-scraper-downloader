@@ -21,7 +21,7 @@ router.post("/instagram", checkApiKey, async (req, res) => {
   }
 });
 
-router.post("/tiktok", async (req, res) => {
+router.post("/tiktok", checkApiKey, async (req, res) => {
   try {
     const { link } = req.body;
     const response = await tikVideo(link);
@@ -32,7 +32,7 @@ router.post("/tiktok", async (req, res) => {
   }
 });
 
-router.post("/facebook", async (req, res) => {
+router.post("/facebook", checkApiKey, async (req, res) => {
   try {
     const { link } = req.body;
     const response = await facebookdl(link);
@@ -43,7 +43,7 @@ router.post("/facebook", async (req, res) => {
   }
 });
 
-router.post("/youtube", async (req, res) => {
+router.post("/youtube", checkApiKey, async (req, res) => {
   try {
     const { link } = req.body;
     const response = await youtubedl(link);
