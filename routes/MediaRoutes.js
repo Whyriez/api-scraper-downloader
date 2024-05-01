@@ -10,6 +10,8 @@ import apiKeys from "../utils/apiKey.js";
 
 const router = express.Router();
 
+console.log(apiKeys);
+
 router.post("/instagram", checkApiKey, async (req, res) => {
   try {
     const { link } = req.body;
