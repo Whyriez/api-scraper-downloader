@@ -3,80 +3,67 @@ import qs from "qs";
 import cheerio from "cheerio";
 import ytdl from "ytdl-core";
 import configDotenv from "dotenv";
+import CryptoJS from "crypto-js";
 configDotenv.config();
 
 const domain = process.env.DOMAIN;
 
-export const instagramDl = (url) => {
+
+export const instagramDl = (url_media) => {
   return new Promise(async (resolve, reject) => {
-    try {
-      const isUrl = (str) => /^https?:\/\//.test(str);
-      if (!isUrl(url) || !/instagram\.com/i.test(url))
-        throw new Error("Invalid URL: " + url);
+      try {
+          const BASE_URL = process.env.INSTAGRAMURL;
+          const headers = {
+              'url': encryptUrl(url_media)
+          };
+          const response = await fetch(BASE_URL, {
+              method: 'GET',
+              headers,
+          });
 
-      const apiUrl = process.env.INSTAGRAMURL;
-      const params = {
-        q: url,
-        t: "media",
-        lang: "en",
-      };
+          const data = await response.json();
+          if (!data) reject({ results_number: 0, url_list: [], thumbnails: [] });
 
-      const headers = {
-        Accept: "*/*",
-        Origin: process.env.origin,
-        Referer: process.env.referer,
-        "Accept-Encoding": "gzip, deflate, br",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Sec-Ch-Ua":
-          '"Not/A)Brand";v="99", "Microsoft Edge";v="115", "Chromium";v="115"',
-        "Sec-Ch-Ua-Mobile": "?0",
-        "Sec-Ch-Ua-Platform": '"Windows"',
-        "Sec-Fetch-Dest": "empty",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-origin",
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.183",
-        "X-Requested-With": "XMLHttpRequest",
-      };
+          let url_list = [];
+          let thumbnails = [];
 
-      const config = {
-        headers,
-      };
+          if (data.video) {
+              data.video.forEach(infovideo => {
+                  if (infovideo.video) {
+                      url_list.push(infovideo.video);
+                  } 
+                  if (infovideo.thumbnail) {
+                      thumbnails.push(infovideo.thumbnail);
+                  }
+              });
+          }
 
-      const response = await axios.post(apiUrl, qs.stringify(params), config);
-      const responseData = response.data.data;
-      const $ = cheerio.load(responseData);
+          if (data.thumbnail) {
+              data.thumbnail.forEach(image => {
+                  url_list.push(image);
+              });
+          }
 
-      const downloadItems = $(".download-items");
-      const result = [];
-
-      downloadItems.each((index, element) => {
-        const thumbnailLink = $(element)
-          .find(".download-items__thumb > img")
-          .attr("src");
-        const downloadLink = $(element)
-          .find(".download-items__btn > a")
-          .attr("href");
-
-        result.push({
-          thumbnail_link: thumbnailLink,
-          download_link: downloadLink,
-        });
-      });
-
-      resolve({
-        status: 200,
-        ...result,
-      });
-    } catch (error) {
-      resolve({
-        status: 404,
-        msg: error?.message || error,
-      });
-    }
+          resolve({ results_number: url_list.length, url_list, thumbnails });
+      } catch (err) {
+          reject(err);
+      }
   });
 };
+
+function encryptUrl (input) {
+  const key = CryptoJS.enc.Utf8.parse('qwertyuioplkjhgf')
+  const iv = CryptoJS.lib.WordArray.random(16)
+
+  const encrypted = CryptoJS.AES.encrypt(input, key, {
+      iv: iv,
+      mode: CryptoJS.mode.ECB,
+      padding: CryptoJS.pad.Pkcs7,
+  });
+
+  const encryptedHex = encrypted.ciphertext.toString(CryptoJS.enc.Hex);
+  return encryptedHex
+}
 
 export const tikVideo = (url) => {
   return new Promise(async (resolve, reject) => {

@@ -10,16 +10,20 @@ import apiKeys from "../utils/apiKey.js";
 
 const router = express.Router();
 
-router.post("/instagram", checkApiKey, async (req, res) => {
+router.get("/instagram", checkApiKey, async (req, res) => {
   try {
-    const { link } = req.body;
+    const { link } = req.query;
+    if (!link) {
+      return res.status(400).json({ error: "Parameter 'link' is required." });
+    }
     const response = await instagramDl(link);
-    res.status(response.status).json(response);
+    res.status(200).json(response);
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 router.post("/tiktok", checkApiKey, async (req, res) => {
   try {
