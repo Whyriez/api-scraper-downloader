@@ -8,61 +8,90 @@ configDotenv.config();
 
 const domain = process.env.DOMAIN;
 
-
 export const instagramDl = (url_media) => {
   return new Promise(async (resolve, reject) => {
-      try {
-          const BASE_URL = process.env.INSTAGRAMURL;
-          const headers = {
-              'url': encryptUrl(url_media)
-          };
-          const response = await fetch(BASE_URL, {
-              method: 'GET',
-              headers,
-          });
+    try {
+      const BASE_URL = process.env.INSTAGRAMURL;
+      const headers = {
+        url: encryptUrl(url_media),
+      };
+      const response = await fetch(BASE_URL, {
+        method: "GET",
+        headers,
+      });
 
-          const data = await response.json();
-          if (!data) reject({ results_number: 0, url_list: [], thumbnails: [] });
-
-          let url_list = [];
-          let thumbnails = [];
-
-          if (data.video) {
-              data.video.forEach(infovideo => {
-                  if (infovideo.video) {
-                      url_list.push(infovideo.video);
-                  } 
-                  if (infovideo.thumbnail) {
-                      thumbnails.push(infovideo.thumbnail);
-                  }
-              });
-          }
-
-          if (data.thumbnail) {
-              data.thumbnail.forEach(image => {
-                  url_list.push(image);
-              });
-          }
-
-          resolve({ results_number: url_list.length, url_list, thumbnails });
-      } catch (err) {
-          reject(err);
+      if (!response.ok) {
+        console.error(`HTTP error! Status: ${response.status}`);
+        return reject({
+          error: `Failed to fetch data from server. Status: ${response.status}`,
+        });
       }
+
+      // Periksa apakah ada konten yang diterima
+      const text = await response.text();
+      if (!text) {
+        console.error("Empty response from server");
+        return reject({ error: "Empty response from server" });
+      }
+
+      // Parsing JSON
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        console.error("Received response:", text);
+        return reject({ error: "Invalid JSON response from server" });
+      }
+
+      if (!data) {
+        return reject({ results_number: 0, url_list: [], thumbnails: [] });
+      }
+
+      let url_list = [];
+      let thumbnails = [];
+
+      if (data.video) {
+        data.video.forEach((infovideo) => {
+          if (infovideo.video) {
+            url_list.push(infovideo.video);
+          }
+          if (infovideo.thumbnail) {
+            thumbnails.push(infovideo.thumbnail);
+          }
+        });
+      }
+
+      if (data.thumbnail) {
+        data.thumbnail.forEach((image) => {
+          url_list.push(image);
+        });
+      }
+
+      resolve({
+        status: 200,
+        results_number: url_list.length,
+        url_list,
+        thumbnails,
+      });
+    } catch (err) {
+      reject(err);
+    }
   });
 };
 
-function encryptUrl (input) {
-  const key = CryptoJS.enc.Utf8.parse('qwertyuioplkjhgf')
-  const iv = CryptoJS.lib.WordArray.random(16)
+function encryptUrl(input) {
+  const key = CryptoJS.enc.Utf8.parse("qwertyuioplkjhgf");
+  const iv = CryptoJS.lib.WordArray.random(16);
 
   const encrypted = CryptoJS.AES.encrypt(input, key, {
-      iv: iv,
-      mode: CryptoJS.mode.ECB,
-      padding: CryptoJS.pad.Pkcs7,
+    iv: iv,
+    mode: CryptoJS.mode.ECB,
+    padding: CryptoJS.pad.Pkcs7,
   });
 
   const encryptedHex = encrypted.ciphertext.toString(CryptoJS.enc.Hex);
-  return encryptedHex
+  return encryptedHex;
 }
 
 export const tikVideo = (url) => {
