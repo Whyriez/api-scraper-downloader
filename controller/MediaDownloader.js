@@ -1,6 +1,6 @@
 import axios from "axios";
-import qs from "qs";
-import cheerio from "cheerio";
+// import qs from "qs";
+// import cheerio from "cheerio";
 import ytdl from "ytdl-core";
 import configDotenv from "dotenv";
 import CryptoJS from "crypto-js";
@@ -140,75 +140,60 @@ export const tikVideo = (url) => {
   });
 };
 
-function getCookies() {
-  return new Promise((resolve, reject) => {
-    axios
-      .get(process.env.COOKIES)
-      .then((response) => {
-        const cookiesArray = response.headers["set-cookie"];
-        resolve(cookiesArray);
-      })
-      .catch((error) => {
-        console.error(error);
-        reject(error);
-      });
-  });
-}
-export const facebookdl = (Url) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const isUrl = (str) => /^https?:\/\//.test(str);
-      if (!isUrl(Url) || !/facebook\.com/i.test(Url))
-        throw new Error("Invalid URL: " + Url);
+export const getFbVideo = async (videoUrl, cookie, useragent)=>{
+  return new Promise((resolve, reject)=>{
+      const headers = {
+          "sec-fetch-user": "?1",
+          "sec-ch-ua-mobile": "?0",
+          "sec-fetch-site": "none",
+          "sec-fetch-dest": "document",
+          "sec-fetch-mode": "navigate",
+          "cache-control": "max-age=0",
+          authority: "www.facebook.com",
+          "upgrade-insecure-requests": "1",
+          "accept-language": "en-GB,en;q=0.9,tr-TR;q=0.8,tr;q=0.7,en-US;q=0.6",
+          "sec-ch-ua": '"Google Chrome";v="89", "Chromium";v="89", ";Not A Brand";v="99"',
+          "user-agent": useragent || "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36",
+          accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+          cookie: cookie || process.env.COOKIES,
+      }
 
-      const cookies = await getCookies();
+      const parseString = (string) => JSON.parse(`{"text": "${string}"}`).text;
 
-      await axios
-        .post(
-          process.env.FACEBOOKURL,
-          new URLSearchParams({
-            url: Url,
-            token: btoa(Date.now()),
-          }),
-          {
-            headers: {
-              authority: process.env.authorityFacebook,
-              accept: "*/*",
-              "accept-language": "ms-MY,ms;q=0.9,en-US;q=0.8,en;q=0.7,id;q=0.6",
-              cookie: cookies.join("; "),
-              origin: process.env.originFacebook,
-              referer: process.env.refererFacebook,
-              "sec-ch-ua": '"Not)A;Brand";v="24", "Chromium";v="116"',
-              "sec-ch-ua-mobile": "?1",
-              "sec-ch-ua-platform": '"Android"',
-              "sec-fetch-dest": "empty",
-              "sec-fetch-mode": "cors",
-              "sec-fetch-site": "same-origin",
-              "user-agent":
-                "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36",
-            },
+      if (!videoUrl || !videoUrl.trim()) return reject("Please specify the Facebook URL");
+      if (["facebook.com", "fb.watch"].every((domain) => !videoUrl.includes(domain))) return reject("Please enter the valid Facebook URL");
+
+      axios.get(videoUrl, { headers }).then(({ data }) => {
+          data = data.replace(/&quot;/g, '"').replace(/&amp;/g, "&")
+          const sdMatch = data.match(/"browser_native_sd_url":"(.*?)"/) || data.match(/"playable_url":"(.*?)"/) || data.match(/sd_src\s*:\s*"([^"]*)"/) || data.match(/(?<="src":")[^"]*(https:\/\/[^"]*)/)
+          const hdMatch = data.match(/"browser_native_hd_url":"(.*?)"/) || data.match(/"playable_url_quality_hd":"(.*?)"/) || data.match(/hd_src\s*:\s*"([^"]*)"/)
+          const titleMatch = data.match(/<meta\sname="description"\scontent="(.*?)"/)
+          const thumbMatch = data.match(/"preferred_thumbnail":{"image":{"uri":"(.*?)"/)
+          var duration = data.match(/"playable_duration_in_ms":[0-9]+/gm)
+
+          if (sdMatch && sdMatch[1]) {
+              const result = {
+                  url: videoUrl,
+                  duration_ms: Number(duration[0].split(":")[1]),
+                  sd: parseString(sdMatch[1]),
+                  hd: hdMatch && hdMatch[1] ? parseString(hdMatch[1]) : "",
+                  title: titleMatch && titleMatch[1] ? parseString(titleMatch[1]) : data.match(/<title>(.*?)<\/title>/)?.[1] ?? "",
+                  thumbnail: thumbMatch && thumbMatch[1] ? parseString(thumbMatch[1]) : ""
+              }
+              resolve({
+                status: 200,
+                result
+              })
+          } else {
+              reject("Unable to fetch video information at this time. Please try again")
           }
-        )
-        .then(({ data }) => {
-          resolve({
-            status: 200,
-            ...data,
-          });
-        })
-        .catch((error) => {
-          resolve({
-            status: 404,
-            msg: error?.message,
-          });
-        });
-    } catch (error) {
-      resolve({
-        status: 404,
-        msg: error?.message,
-      });
-    }
-  });
-};
+      }).catch((err) => {
+          console.log(err)
+          reject("Unable to fetch video information at this time. Please try again")
+      })
+  })
+}
 
 export const youtubedl = async function (url) {
   try {

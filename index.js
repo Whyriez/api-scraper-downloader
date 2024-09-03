@@ -1,13 +1,11 @@
 import express from "express";
 import cors from "cors";
 import MediaRoutes from "./routes/MediaRoutes.js";
-import axios from "axios";
 const app = express();
 
 app.get("/", (req, res) => {
   res.send("Api Ready");
 });
-
 
 app.use(
   cors({

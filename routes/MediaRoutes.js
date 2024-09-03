@@ -1,6 +1,6 @@
 import express from "express";
 import {
-  facebookdl,
+  getFbVideo,
   instagramDl,
   tikVideo,
   youtubedl,
@@ -39,7 +39,8 @@ router.post("/tiktok", checkApiKey, async (req, res) => {
 router.post("/facebook", checkApiKey, async (req, res) => {
   try {
     const { link } = req.body;
-    const response = await facebookdl(link);
+    const response = await getFbVideo(link);
+    console.log(response);
     res.status(response.status).json(response);
   } catch (error) {
     console.log(error.message);
